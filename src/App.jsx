@@ -8,6 +8,7 @@ import VoiceLabTab from './components/dashboard/VoiceLabTab'
 import AIInsightsTab from './components/dashboard/AIInsightsTab'
 import HistoryTab from './components/dashboard/HistoryTab'
 import SettingsTab from './components/dashboard/SettingsTab'
+import PatientsTab from './components/dashboard/PatientsTab'
 
 function AppContent() {
   const { activeTab } = useVoiceApp()
@@ -22,6 +23,8 @@ function AppContent() {
         return <AIInsightsTab />
       case 'Sessions':
         return <HistoryTab />
+      case 'Patients':
+        return <PatientsTab />
       case 'Settings':
       case 'Help':
         return <SettingsTab />

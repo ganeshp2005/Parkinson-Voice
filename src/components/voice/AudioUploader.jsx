@@ -1,16 +1,18 @@
 import { useRef, useState } from 'react'
-import { Check, FileAudio, Play, Sparkles, Upload } from 'lucide-react'
+import { Check, FileAudio, Upload } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import { extractAcousticFeatures } from '../../utils/audioAnalysis'
 
 export default function AudioUploader() {
-  const { addSession, setIsAnalyzing, SAMPLE_RECORDINGS } = useVoiceApp()
+  const { addSession, setIsAnalyzing, patients, activePatientId, setActiveTab } = useVoiceApp()
   const fileInputRef = useRef(null)
   const [uploadedName, setUploadedName] = useState('')
+  const activePatient = patients.find((patient) => patient.id === activePatientId)
+  const canAnalyze = Boolean(activePatient?.audioConsent)
 
   const handleFileUpload = async (event) => {
     const file = event.target.files?.[0]
-    if (!file) return
+    if (!file || !canAnalyze) return
 
     setUploadedName(file.name)
     setIsAnalyzing(true)
@@ -20,6 +22,7 @@ export default function AudioUploader() {
       addSession({
         title: file.name.replace(/\.[^/.]+$/, ''),
         category: 'Uploaded Audio File',
+        patientId: activePatientId,
         duration: analysisResult.duration,
         audioUrl: URL.createObjectURL(file),
         ...analysisResult
@@ -45,7 +48,13 @@ export default function AudioUploader() {
         Drag & drop any <b>WAV, MP3, or OGG</b> recording for instant high-dimensional acoustic analysis.
       </p>
 
-      <div className="dropzone" onClick={() => fileInputRef.current?.click()}>
+      {activePatient ? (
+        <p className="audio-patient-label">Selected patient: <b>{activePatient.firstName} {activePatient.lastName}</b></p>
+      ) : (
+        <button className="btn-glass audio-patient-prompt" type="button" onClick={() => setActiveTab('Patients')}>Choose or register a patient first</button>
+      )}
+      {activePatient && !activePatient.audioConsent && <p className="audio-consent-warning">Recording and analysis are disabled until consent is recorded in the patient record.</p>}
+      <button className="dropzone" type="button" disabled={!canAnalyze} onClick={() => fileInputRef.current?.click()}>
         <div className="upload-icon-circle">
           <Upload size={22} />
         </div>
@@ -60,7 +69,7 @@ export default function AudioUploader() {
           hidden
           onChange={handleFileUpload}
         />
-      </div>
+      </button>
 
       {uploadedName && (
         <div className="uploaded-badge">
@@ -116,6 +125,12 @@ export default function AudioUploader() {
           background: rgba(157, 78, 221, 0.12);
           box-shadow: 0 0 20px rgba(157, 78, 221, 0.2);
         }
+
+        .dropzone:disabled { cursor: not-allowed; opacity: .45; }
+        .audio-patient-label, .audio-consent-warning { color: var(--text-muted); font-size: .82rem; }
+        .audio-patient-label b { color: var(--neon-cyan); }
+        .audio-consent-warning { color: var(--neon-amber); }
+        .audio-patient-prompt { align-self: flex-start; }
 
         .upload-icon-circle {
           width: 48px;

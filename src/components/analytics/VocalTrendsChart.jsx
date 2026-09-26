@@ -1,27 +1,38 @@
 import { Activity, TrendingUp } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-export default function VocalTrendsChart() {
-  const trendData = [
-    { day: 'Mon', score: 82, jitter: 0.32, hnr: 26.2 },
-    { day: 'Tue', score: 84, jitter: 0.34, hnr: 26.8 },
-    { day: 'Wed', score: 79, jitter: 0.48, hnr: 24.5 },
-    { day: 'Thu', score: 88, jitter: 0.28, hnr: 28.1 },
-    { day: 'Fri', score: 86, jitter: 0.31, hnr: 27.4 },
-    { day: 'Sat', score: 91, jitter: 0.25, hnr: 29.0 },
-    { day: 'Sun', score: 89, jitter: 0.29, hnr: 28.2 }
-  ]
+export default function VocalTrendsChart({ sessions = [], patientId }) {
+  const patientSessions = patientId ? sessions.filter((session) => session.patientId === patientId).slice(0, 7).reverse() : []
+  const trendData = patientSessions.map((session, index) => ({
+    day: `Test ${index + 1}`,
+    score: session.clarityScore,
+    jitter: (session.metrics?.jitter || 0) * 100,
+    hnr: session.metrics?.hnr || 0
+  }))
+
+  if (trendData.length === 0) {
+    return (
+      <div className="trends-card glass-panel">
+        <div className="trends-header"><div><p className="eyebrow neon-badge neon-badge-emerald">PATIENT SESSION TRENDS</p><h3 className="trends-title">Voice analysis history</h3></div></div>
+        <p className="trends-empty">Patient-specific trends will appear after voice samples are analyzed.</p>
+        <style>{`.trends-empty { color: var(--text-muted); font-size: .88rem; padding: 20px 0; }`}</style>
+      </div>
+    )
+  }
+
+  const averageClarity = (trendData.reduce((total, entry) => total + entry.score, 0) / trendData.length).toFixed(1)
+  const latestJitter = trendData.at(-1).jitter.toFixed(2)
 
   return (
     <div className="trends-card glass-panel">
       <div className="trends-header">
         <div>
-          <p className="eyebrow neon-badge neon-badge-emerald">LONGITUDINAL VOCAL STABILITY</p>
-          <h3 className="trends-title">7-Day Clarity & Phonation Trend</h3>
+          <p className="eyebrow neon-badge neon-badge-emerald">PATIENT SESSION TRENDS</p>
+          <h3 className="trends-title">Voice analysis history</h3>
         </div>
         <div className="trend-stat">
           <TrendingUp size={16} className="trend-icon" />
-          <span>+8.4% Phonation Stability</span>
+          <span>{trendData.length} analyzed sessions</span>
         </div>
       </div>
 
@@ -66,11 +77,11 @@ export default function VocalTrendsChart() {
       <div className="chart-footer font-mono">
         <div className="footer-item">
           <Activity size={14} className="icon-cyan" />
-          <span>Average Clarity: <b>85.7%</b></span>
+          <span>Average Clarity: <b>{averageClarity}%</b></span>
         </div>
         <div className="footer-item">
           <span className="dot-emerald" />
-          <span>Jitter Variance: <b>Low (0.32%)</b></span>
+          <span>Latest Jitter: <b>{latestJitter}%</b></span>
         </div>
       </div>
 

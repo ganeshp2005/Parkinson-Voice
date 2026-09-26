@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { Activity, AudioLines, Cpu, Sliders, Play, Mic, RefreshCw, Volume2, Waves } from 'lucide-react'
+import { AudioLines } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import AcousticMetricsGrid from '../analytics/AcousticMetricsGrid'
 import SpectrogramView from '../analytics/SpectrogramView'
-import LiveAudioCanvas from '../voice/LiveAudioCanvas'
+import AudioRecorder from '../voice/AudioRecorder'
+import AudioUploader from '../voice/AudioUploader'
 
 export default function VoiceLabTab() {
-  const { currentSession, isRecording, setIsRecording, addSession } = useVoiceApp()
-  const [activeFilter, setActiveFilter] = useState('raw')
+  const { currentSession } = useVoiceApp()
   const [selectedTestPreset, setSelectedTestPreset] = useState('sustained-vowel')
 
   const testPresets = [
@@ -50,53 +50,9 @@ export default function VoiceLabTab() {
         ))}
       </div>
 
-      {/* Main Studio Console */}
-      <div className="studio-console-grid">
-        {/* Visualizer Studio */}
-        <div className="visualizer-studio glass-panel">
-          <div className="studio-header">
-            <div>
-              <p className="eyebrow neon-badge neon-badge-emerald">REAL-TIME SPECTRAL ENGINE</p>
-              <h3 className="studio-heading">Frequency Spectrum Canvas</h3>
-            </div>
-
-            {/* Filter Toggle */}
-            <div className="filter-toggles">
-              <button
-                className={`filter-btn ${activeFilter === 'raw' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('raw')}
-              >
-                Raw Audio
-              </button>
-              <button
-                className={`filter-btn ${activeFilter === 'bandpass' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('bandpass')}
-              >
-                Bandpass (80-500Hz)
-              </button>
-              <button
-                className={`filter-btn ${activeFilter === 'tremor' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('tremor')}
-              >
-                Tremor Isolation
-              </button>
-            </div>
-          </div>
-
-          <LiveAudioCanvas isRecording={isRecording} />
-
-          <div className="studio-controls-bar">
-            <div className="gain-indicator font-mono">
-              <Sliders size={16} /> <span>Gain: <b>+0.0 dB</b></span>
-            </div>
-            <button
-              className={`btn-cyber-danger ${isRecording ? 'pulse' : ''}`}
-              onClick={() => setIsRecording(!isRecording)}
-            >
-              <Mic size={18} /> {isRecording ? 'Stop Recording' : 'Start Studio Test'}
-            </button>
-          </div>
-        </div>
+      <div className="studio-input-grid">
+        <AudioRecorder />
+        <AudioUploader />
       </div>
 
       {/* Acoustic Biomarkers & Spectrogram */}
@@ -109,6 +65,9 @@ export default function VoiceLabTab() {
           flex-direction: column;
           gap: 24px;
         }
+
+        .studio-input-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr); gap: 20px; align-items: start; }
+        @media (max-width: 1000px) { .studio-input-grid { grid-template-columns: 1fr; } }
 
         .lab-hero {
           padding: 28px;

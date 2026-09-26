@@ -8,7 +8,7 @@ import AudioRecorder from '../voice/AudioRecorder'
 import AudioUploader from '../voice/AudioUploader'
 
 export default function OverviewTab() {
-  const { currentSession, sessions, setCurrentSession, userProfile, setActiveTab } = useVoiceApp()
+  const { currentSession, sessions, activePatientId, setCurrentSession, userProfile, setActiveTab } = useVoiceApp()
   const [playingId, setPlayingId] = useState(null)
   const [showNote, setShowNote] = useState(true)
 
@@ -49,7 +49,7 @@ export default function OverviewTab() {
         {/* Right Column: AI Risk Meter & Trends */}
         <div className="grid-right-col">
           <MLPredictionGauge session={currentSession} />
-          <VocalTrendsChart />
+          <VocalTrendsChart sessions={sessions} patientId={activePatientId} />
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export default function OverviewTab() {
       </section>
 
       {/* Neural AI Note Banner */}
-      {showNote && (
+      {showNote && currentSession && (
         <section className="ai-note-card glass-panel">
           <div className="sparkle-icon-box">
             <Sparkles size={22} />

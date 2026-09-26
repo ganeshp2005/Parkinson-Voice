@@ -1,4 +1,4 @@
-import { Activity, AudioLines, BarChart3, ChevronRight, CircleHelp, Cpu, FileAudio, LayoutDashboard, Settings, Sparkles, UserCheck } from 'lucide-react'
+import { Activity, AudioLines, ChevronRight, CircleHelp, Cpu, FileAudio, LayoutDashboard, Settings, Sparkles, UserCheck, UsersRound } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 
 export default function Sidebar() {
@@ -9,6 +9,7 @@ export default function Sidebar() {
     { id: 'VoiceLab', label: 'Voice Acoustic Lab', icon: AudioLines, badge: 'LIVE' },
     { id: 'Insights', label: 'AI Biomarker Insights', icon: Cpu, badge: null },
     { id: 'Sessions', label: 'Session History', icon: FileAudio, badge: sessions.length.toString() },
+    { id: 'Patients', label: 'Patient Records', icon: UsersRound, badge: null },
   ]
 
   const manageItems = [

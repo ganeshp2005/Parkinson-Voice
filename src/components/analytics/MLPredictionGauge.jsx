@@ -43,6 +43,19 @@ export default function MLPredictionGauge({ session }) {
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference
 
+  if (!session) {
+    return (
+      <div className="gauge-card glass-panel gauge-empty-card">
+        <div className="gauge-header">
+          <div><p className="eyebrow neon-badge neon-badge-cyan">VOICE ANALYSIS</p><h3 className="gauge-title">Risk and clarity</h3></div>
+          <Brain size={24} className="brain-icon" />
+        </div>
+        <p className="gauge-summary">No analyzed voice sample for the selected patient yet.</p>
+        <style>{`.gauge-empty-card { min-height: 230px; justify-content: center; }`}</style>
+      </div>
+    )
+  }
+
   return (
     <div className="gauge-card glass-panel">
       <div className="gauge-header">

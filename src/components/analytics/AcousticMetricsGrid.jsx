@@ -5,15 +5,22 @@ import { ACOUSTIC_BIOMARKERS } from '../../data/acousticKnowledge'
 export default function AcousticMetricsGrid({ metrics }) {
   const [selectedBio, setSelectedBio] = useState(null)
 
-  const m = metrics || {
-    fo: 124.62,
-    jitter: 0.0034,
-    shimmer: 0.0182,
-    hnr: 26.85,
-    ppe: 0.0864,
-    rpde: 0.312,
-    dfa: 0.624
+  if (!metrics) {
+    return (
+      <section className="metrics-section">
+        <div className="section-title-wrap">
+          <div>
+            <p className="eyebrow neon-badge neon-badge-cyan">ACOUSTIC BIOMARKER MATRIX</p>
+            <h3 className="section-heading-text">Vocal Signal Biomarkers</h3>
+          </div>
+        </div>
+        <p className="metrics-empty glass-panel">No analysis for this patient yet. Record a voice sample or upload an audio file to see metrics.</p>
+        <style>{`.metrics-empty { padding: 22px; color: var(--text-muted); font-size: .9rem; }`}</style>
+      </section>
+    )
   }
+
+  const m = metrics
 
   const metricCards = [
     {

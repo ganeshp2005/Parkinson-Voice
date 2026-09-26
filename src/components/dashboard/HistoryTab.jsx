@@ -3,9 +3,10 @@ import { AudioLines, Calendar, Clock, Download, FileAudio, Filter, Pause, Play, 
 import { useVoiceApp } from '../../context/VoiceAppContext'
 
 export default function HistoryTab() {
-  const { sessions, setSessions, currentSession, setCurrentSession } = useVoiceApp()
+  const { sessions, setSessions, currentSession, setCurrentSession, patients } = useVoiceApp()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRisk, setFilterRisk] = useState('All')
+  const [filterPatient, setFilterPatient] = useState('All')
   const [playingId, setPlayingId] = useState(null)
 
   const togglePlay = (id) => {
@@ -31,7 +32,8 @@ export default function HistoryTab() {
   const filteredSessions = sessions.filter((s) => {
     const matchesSearch = s.title.toLowerCase().includes(searchTerm.toLowerCase()) || s.category.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRisk = filterRisk === 'All' || s.riskLevel === filterRisk
-    return matchesSearch && matchesRisk
+    const matchesPatient = filterPatient === 'All' || (filterPatient === 'Unassigned' ? !s.patientId : s.patientId === filterPatient)
+    return matchesSearch && matchesRisk && matchesPatient
   })
 
   return (
@@ -78,6 +80,15 @@ export default function HistoryTab() {
             </button>
           ))}
         </div>
+
+        <label className="patient-history-filter">
+          <span>Patient</span>
+          <select value={filterPatient} onChange={(event) => setFilterPatient(event.target.value)}>
+            <option value="All">All patients</option>
+            <option value="Unassigned">Unassigned</option>
+            {patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.firstName} {patient.lastName}</option>)}
+          </select>
+        </label>
       </div>
 
       {/* Sessions Grid / Table */}
@@ -117,6 +128,7 @@ export default function HistoryTab() {
                     <small className="session-date-row">
                       <Calendar size={12} /> {session.date} • {session.category}
                     </small>
+                    <small className="history-patient-name">{patients.find((patient) => patient.id === session.patientId) ? `${patients.find((patient) => patient.id === session.patientId).firstName} ${patients.find((patient) => patient.id === session.patientId).lastName}` : 'Unassigned sample session'}</small>
                   </div>
                 </div>
 
@@ -203,6 +215,16 @@ export default function HistoryTab() {
           justify-content: space-between;
           gap: 16px;
         }
+
+        @media (max-width: 900px) {
+          .filter-controls-bar { align-items: stretch; flex-direction: column; }
+          .risk-filters { flex-wrap: wrap; }
+        }
+
+        .patient-history-filter { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: .8rem; }
+        .patient-history-filter select { max-width: 190px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; color: #fff; padding: 8px; }
+        .patient-history-filter option { background: #101525; }
+        .history-patient-name { display: block; color: var(--neon-cyan); font-size: .72rem; margin-top: 3px; }
 
         .search-box {
           position: relative;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Activity, CheckCircle2, Mic, Pause, Play, RefreshCw, Sparkles, Square, Volume2 } from 'lucide-react'
+import { Activity, Mic, RefreshCw, Square } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import { extractAcousticFeatures } from '../../utils/audioAnalysis'
 import LiveAudioCanvas from './LiveAudioCanvas'
@@ -10,22 +10,29 @@ export default function AudioRecorder() {
     setIsRecording,
     isAnalyzing,
     setIsAnalyzing,
+    patients,
+    activePatientId,
+    setActiveTab,
     addSession,
-    setActiveTab
   } = useVoiceApp()
 
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [audioUrl, setAudioUrl] = useState('')
-  const [recordedBlob, setRecordedBlob] = useState(null)
   const [analyserNode, setAnalyserNode] = useState(null)
+  const [recordingError, setRecordingError] = useState('')
 
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
   const timerIntervalRef = useRef(null)
   const audioContextRef = useRef(null)
+  const timerSecondsRef = useRef(0)
+  const activePatient = patients.find((patient) => patient.id === activePatientId)
+  const canRecord = Boolean(activePatient?.audioConsent)
 
   // Start Mic Recording
   const startRecording = async () => {
+    if (!canRecord) return
+    setRecordingError('')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       
@@ -53,7 +60,6 @@ export default function AudioRecorder() {
       mediaRecorder.onstop = async () => {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
         const url = URL.createObjectURL(blob)
-        setRecordedBlob(blob)
         setAudioUrl(url)
 
         // Stop stream tracks
@@ -61,23 +67,21 @@ export default function AudioRecorder() {
         if (audioContextRef.current) {
           audioContextRef.current.close()
         }
+        runAcousticPipeline(blob, timerSecondsRef.current)
       }
 
       mediaRecorder.start(100)
       setIsRecording(true)
       setTimerSeconds(0)
+      timerSecondsRef.current = 0
 
       timerIntervalRef.current = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1)
+        timerSecondsRef.current += 1
+        setTimerSeconds(timerSecondsRef.current)
       }, 1000)
     } catch (err) {
       console.warn('Microphone permission denied or unavailable:', err)
-      // Fallback simulated recording mode
-      setIsRecording(true)
-      setTimerSeconds(0)
-      timerIntervalRef.current = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1)
-      }, 1000)
+      setRecordingError('Microphone access was unavailable. Check browser permissions and try again.')
     }
   }
 
@@ -88,28 +92,19 @@ export default function AudioRecorder() {
     }
     clearInterval(timerIntervalRef.current)
     setIsRecording(false)
-
-    // Trigger AI Feature Extraction Pipeline
-    runAcousticPipeline(recordedBlob)
   }
 
-  const runAcousticPipeline = async (blob) => {
+  const runAcousticPipeline = async (blob, elapsedSeconds) => {
     setIsAnalyzing(true)
-    // Small artificial artificial neural processing delay for realistic UX animation
     setTimeout(async () => {
-      let analysisResult
-      if (blob) {
-        analysisResult = await extractAcousticFeatures(blob)
-      } else {
-        // Fallback synthetic recording generator
-        analysisResult = await extractAcousticFeatures(new Blob(['dummy'], { type: 'audio/webm' }))
-      }
+      const analysisResult = await extractAcousticFeatures(blob)
 
       const sessionTitle = `Vocal Phonation #${Math.floor(Math.random() * 899 + 100)}`
       addSession({
         title: sessionTitle,
         category: 'Live Mic Phonation',
-        duration: formatTime(timerSeconds || 12),
+        patientId: activePatientId,
+        duration: formatTime(elapsedSeconds || 1),
         audioUrl,
         ...analysisResult
       })
@@ -144,6 +139,14 @@ export default function AudioRecorder() {
         </span>
       </div>
 
+      {activePatient ? (
+        <p className="recording-patient-label">Selected patient: <b>{activePatient.firstName} {activePatient.lastName}</b></p>
+      ) : (
+        <button className="btn-glass recording-patient-prompt" type="button" onClick={() => setActiveTab('Patients')}>Choose or register a patient first</button>
+      )}
+      {activePatient && !activePatient.audioConsent && <p className="recording-error">Recording is disabled until audio consent is recorded in the patient record.</p>}
+      {recordingError && <p className="recording-error" role="alert">{recordingError}</p>}
+
       {/* Interactive Web Audio Canvas Visualizer */}
       <LiveAudioCanvas isRecording={isRecording} analyserNode={analyserNode} />
 
@@ -159,7 +162,7 @@ export default function AudioRecorder() {
           <button
             className="big-record-btn start animate-pulse-glow"
             onClick={startRecording}
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || !canRecord}
             title="Start Microphone Recording"
           >
             <Mic size={28} />
@@ -204,6 +207,11 @@ export default function AudioRecorder() {
           align-items: center;
           justify-content: space-between;
         }
+
+        .recording-patient-label, .recording-error { color: var(--text-muted); font-size: .82rem; }
+        .recording-patient-label b { color: var(--neon-cyan); }
+        .recording-error { color: var(--neon-amber); }
+        .recording-patient-prompt { align-self: flex-start; }
 
         .eyebrow {
           margin-bottom: 6px;
