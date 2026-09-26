@@ -1,21 +1,18 @@
 import { useState } from 'react'
-import { AudioLines, Calendar, Clock, Download, FileAudio, Filter, Pause, Play, Search, Trash2, CheckCircle2, ShieldAlert, AlertCircle } from 'lucide-react'
+import { AudioLines, Calendar, Clock, Download, FileAudio, Filter, Search, Trash2, CheckCircle2, ShieldAlert, AlertCircle } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
+import { deleteSessionAudio } from '../../utils/audioStorage'
+import SessionAudioButton from '../common/SessionAudioButton'
 
 export default function HistoryTab() {
-  const { sessions, setSessions, currentSession, setCurrentSession, patients } = useVoiceApp()
+  const { sessions, setSessions, currentSession, setCurrentSession, patients, accountId } = useVoiceApp()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRisk, setFilterRisk] = useState('All')
   const [filterPatient, setFilterPatient] = useState('All')
-  const [playingId, setPlayingId] = useState(null)
-
-  const togglePlay = (id) => {
-    setPlayingId(playingId === id ? null : id)
-  }
-
   const handleDelete = (id, e) => {
     e.stopPropagation()
     setSessions((prev) => prev.filter((s) => s.id !== id))
+    deleteSessionAudio(accountId, id).catch((error) => console.warn('Saved audio could not be removed:', error))
   }
 
   const handleExportPDF = (session, e) => {
@@ -50,7 +47,8 @@ export default function HistoryTab() {
 
         <button
           className="btn-cyber-primary"
-          onClick={() => handleExportPDF(currentSession || sessions[0], { stopPropagation: () => {} })}
+            onClick={() => currentSession && handleExportPDF(currentSession, { stopPropagation: () => {} })}
+          disabled={!currentSession}
         >
           <Download size={16} /> Export Active Session Report
         </button>
@@ -100,7 +98,6 @@ export default function HistoryTab() {
           </div>
         ) : (
           filteredSessions.map((session) => {
-            const isPlaying = playingId === session.id
             const isSelected = currentSession?.id === session.id
 
             let badgeClass = 'neon-badge-emerald'
@@ -148,16 +145,7 @@ export default function HistoryTab() {
                     <Clock size={14} /> {session.duration}
                   </div>
 
-                  <button
-                    className={`play-btn ${isPlaying ? 'playing' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      togglePlay(session.id)
-                    }}
-                    title="Play audio preview"
-                  >
-                    {isPlaying ? <Pause size={16} /> : <Play size={16} fill="currentColor" />}
-                  </button>
+                  <SessionAudioButton session={session} accountId={accountId} />
 
                   <button
                     className="action-icon-btn"

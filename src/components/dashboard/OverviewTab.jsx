@@ -1,20 +1,17 @@
 import { useState } from 'react'
-import { AudioLines, Clock3, FileAudio, Mic, MoreHorizontal, Pause, Play, Plus, Sparkles, X } from 'lucide-react'
+import { AudioLines, Clock3, Mic, Sparkles, X } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import AcousticMetricsGrid from '../analytics/AcousticMetricsGrid'
 import MLPredictionGauge from '../analytics/MLPredictionGauge'
 import VocalTrendsChart from '../analytics/VocalTrendsChart'
 import AudioRecorder from '../voice/AudioRecorder'
 import AudioUploader from '../voice/AudioUploader'
+import SessionAudioButton from '../common/SessionAudioButton'
 
 export default function OverviewTab() {
-  const { currentSession, sessions, activePatientId, setCurrentSession, userProfile, setActiveTab } = useVoiceApp()
-  const [playingId, setPlayingId] = useState(null)
+  const { currentSession, sessions, activePatientId, accountId, setCurrentSession, userProfile, setActiveTab } = useVoiceApp()
   const [showNote, setShowNote] = useState(true)
-
-  const togglePlay = (id) => {
-    setPlayingId(playingId === id ? null : id)
-  }
+  const patientSessions = activePatientId ? sessions.filter((session) => session.patientId === activePatientId) : []
 
   return (
     <div className="overview-container animate-fade-in">
@@ -28,7 +25,7 @@ export default function OverviewTab() {
             Good morning, <span className="gradient-text">{userProfile.name}</span>.
           </h1>
           <p className="hero-subtext">
-            Transform your voice into high-precision neurological biomarkers. Monitor acoustic jitter, shimmer, HNR, and phonation stability.
+            Review experimental acoustic estimates such as pitch, jitter, shimmer, and HNR across voice sessions. These results are for demonstration, not diagnosis.
           </p>
         </div>
         <div className="hero-actions">
@@ -64,13 +61,13 @@ export default function OverviewTab() {
             <h3 className="section-title-text">Recent Phonation Sessions</h3>
           </div>
           <button className="btn-glass" onClick={() => setActiveTab('Sessions')}>
-            View All ({sessions.length})
+            View All ({patientSessions.length})
           </button>
         </div>
 
         <div className="sessions-list">
-          {sessions.slice(0, 3).map((session) => {
-            const isPlaying = playingId === session.id
+          {patientSessions.length === 0 && <p className="overview-no-sessions">No voice records for the selected patient yet. Record a sample or upload audio to start their history.</p>}
+          {patientSessions.slice(0, 3).map((session) => {
             return (
               <div
                 key={session.id}
@@ -84,6 +81,7 @@ export default function OverviewTab() {
                 <div className="session-main-info">
                   <b className="session-name">{session.title}</b>
                   <small className="session-meta">{session.date} • {session.category}</small>
+                  <small className="session-meta">{session.riskLevel} · {session.riskScore}% prediction</small>
                 </div>
 
                 <div className="session-duration font-mono">
@@ -96,15 +94,7 @@ export default function OverviewTab() {
                 </div>
 
                 <div className="session-actions">
-                  <button
-                    className={`play-btn ${isPlaying ? 'playing' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      togglePlay(session.id)
-                    }}
-                  >
-                    {isPlaying ? <Pause size={16} /> : <Play size={16} fill="currentColor" />}
-                  </button>
+                  <SessionAudioButton session={session} accountId={accountId} />
                 </div>
               </div>
             )

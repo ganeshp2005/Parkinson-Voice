@@ -1,8 +1,8 @@
-import { Activity, AudioLines, ChevronRight, CircleHelp, Cpu, FileAudio, LayoutDashboard, Settings, Sparkles, UserCheck, UsersRound } from 'lucide-react'
+import { Activity, AudioLines, ChevronRight, CircleHelp, Cpu, FileAudio, LayoutDashboard, LogOut, Settings, Sparkles, UsersRound } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, sessions, userProfile } = useVoiceApp()
+  const { activeTab, setActiveTab, sessions, userProfile, authUser, signOut } = useVoiceApp()
 
   const navItems = [
     { id: 'Overview', label: 'Overview', icon: LayoutDashboard, badge: null },
@@ -35,9 +35,9 @@ export default function Sidebar() {
         <div className="avatar-circle font-display">{userProfile.avatar}</div>
         <div className="user-details">
           <b className="user-name">{userProfile.name}</b>
-          <small className="user-plan">{userProfile.plan}</small>
+          <small className="user-plan">{authUser?.email}</small>
         </div>
-        <UserCheck size={14} className="user-verified-icon" />
+        <button className="signout-button" type="button" onClick={signOut} title="Sign out" aria-label="Sign out"><LogOut size={17} /></button>
       </div>
 
       {/* Main Navigation */}
@@ -89,9 +89,9 @@ export default function Sidebar() {
         <div className="pro-banner glass-panel">
           <div className="pro-header">
             <Sparkles size={18} className="sparkle-icon" />
-            <span>AI Neural Deep Analysis</span>
+            <span>Voice Session Analysis</span>
           </div>
-          <p>Extract pitch entropy, DFA & MFCC spectrum vectors instantly.</p>
+          <p>Review experimental acoustic estimates and saved voice sessions.</p>
           <button className="btn-cyber-primary btn-sm" onClick={() => setActiveTab('VoiceLab')}>
             Open Voice Lab <ChevronRight size={14} />
           </button>
@@ -106,13 +106,17 @@ export default function Sidebar() {
       <style>{`
         .sidebar-container {
           width: 280px;
-          min-height: 100vh;
+          height: 100vh;
+          min-height: 0;
           display: flex;
           flex-direction: column;
           padding: 24px 18px;
           gap: 20px;
           position: sticky;
           top: 0;
+          align-self: flex-start;
+          overflow-y: auto;
+          flex: 0 0 280px;
           z-index: 20;
           border-right: 1px solid rgba(255, 255, 255, 0.08);
           background: rgba(10, 13, 26, 0.75);
@@ -199,6 +203,9 @@ export default function Sidebar() {
         .user-verified-icon {
           color: var(--neon-emerald);
         }
+
+        .signout-button { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; color: var(--text-muted); cursor: pointer; }
+        .signout-button:hover { background: rgba(255,255,255,.08); color: #fff; }
 
         .sidebar-nav {
           display: flex;
@@ -319,6 +326,18 @@ export default function Sidebar() {
 
         .vocal-baseline-indicator svg {
           color: var(--neon-emerald);
+        }
+
+        @media (max-width: 1024px) {
+          .sidebar-container {
+            position: relative;
+            top: auto;
+            width: 100%;
+            height: auto;
+            min-height: 0;
+            flex: 0 0 auto;
+            overflow: visible;
+          }
         }
       `}</style>
     </aside>

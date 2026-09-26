@@ -1,4 +1,4 @@
-import { AlertCircle, Lock, ShieldCheck, X } from 'lucide-react'
+import { AlertCircle, Info, X } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 
 export default function Footer() {
@@ -14,8 +14,7 @@ export default function Footer() {
           <div className="disclaimer-content">
             <b>ACADEMIC & RESEARCH DISCLAIMER:</b>
             <span>
-              ParkinsonVoice is an AI research platform designed for voice biomarker signal processing.
-              Outputs are for experimental monitoring and do not constitute a formal clinical diagnosis. Consult a licensed neurologist for medical evaluations.
+              ParkinsonVoice is an experimental voice-analysis demo. Its heuristic estimates are not validated clinical results and do not constitute a diagnosis. Do not use this prototype for medical decisions.
             </span>
           </div>
           <button className="disclaimer-close-btn" onClick={() => setShowDisclaimer(false)}>
@@ -32,10 +31,7 @@ export default function Footer() {
         </div>
         <div className="footer-right">
           <span className="privacy-badge">
-            <Lock size={13} /> 256-Bit Encrypted Local Audio Processing
-          </span>
-          <span className="privacy-badge">
-            <ShieldCheck size={13} /> HIPAA & GDPR Compliant Anonymization
+            <Info size={13} /> Demo only · data stored in this browser
           </span>
         </div>
       </div>
@@ -122,6 +118,11 @@ export default function Footer() {
           display: flex;
           align-items: center;
           gap: 16px;
+        }
+
+        @media (max-width: 900px) {
+          .footer-bottom { align-items: flex-start; flex-direction: column; gap: 12px; }
+          .footer-left, .footer-right { flex-wrap: wrap; }
         }
 
         .privacy-badge {

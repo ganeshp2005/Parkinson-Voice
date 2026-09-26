@@ -60,8 +60,8 @@ export default function MLPredictionGauge({ session }) {
     <div className="gauge-card glass-panel">
       <div className="gauge-header">
         <div>
-          <p className={`eyebrow neon-badge neon-badge-${colorClass}`}>AI RISK INDEX</p>
-          <h3 className="gauge-title">Vocal Dysphonia Index</h3>
+          <p className={`eyebrow neon-badge neon-badge-${colorClass}`}>EXPERIMENTAL VOICE SCORE</p>
+          <h3 className="gauge-title">Heuristic demo estimate</h3>
         </div>
         <Brain size={24} className="brain-icon" />
       </div>
@@ -114,8 +114,8 @@ export default function MLPredictionGauge({ session }) {
         </div>
         <div className="stat-divider" />
         <div className="stat-col">
-          <span>Neural Confidence</span>
-          <b>96.4%</b>
+          <span>Analysis method</span>
+          <b>Demo heuristic</b>
         </div>
       </div>
 

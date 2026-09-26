@@ -9,9 +9,12 @@ import AIInsightsTab from './components/dashboard/AIInsightsTab'
 import HistoryTab from './components/dashboard/HistoryTab'
 import SettingsTab from './components/dashboard/SettingsTab'
 import PatientsTab from './components/dashboard/PatientsTab'
+import AuthPage from './components/auth/AuthPage'
 
 function AppContent() {
-  const { activeTab } = useVoiceApp()
+  const { activeTab, authUser } = useVoiceApp()
+
+  if (!authUser) return <AuthPage />
 
   const renderActiveView = () => {
     switch (activeTab) {

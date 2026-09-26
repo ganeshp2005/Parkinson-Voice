@@ -5,9 +5,11 @@
 ![Web Audio API](https://img.shields.io/badge/Web_Audio_API-Enabled-00F2FE?style=for-the-badge&logo=webrtc&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-00F5D4?style=for-the-badge)
 
-**ParkinsonVoice** is an AI-powered healthcare and acoustic signal-processing web platform designed to analyze vocal and speech characteristics associated with Parkinson's disease (PD). The system provides an interactive, cyber-neon dark glassmorphism dashboard where users can perform real-time microphone voice recordings or upload speech audio files for high-dimensional acoustic feature extraction and machine learning dysphonia risk indexing.
+**ParkinsonVoice** is an experimental voice-analysis demo. It includes local demo accounts, patient profiles, microphone recording, audio uploads, and session-history views. Its browser-only account system is not secure authentication, patient and audio records are not shared between browsers, and its heuristic prediction values are not clinical results.
 
 > ⚠️ **Academic & Research Disclaimer:** ParkinsonVoice is an academic research platform designed for voice biomarker signal processing and experimental monitoring. Outputs do not constitute a formal clinical diagnosis. Always consult a licensed neurologist for medical evaluations.
+
+> **Privacy warning:** Use synthetic test data only. Do not enter real patient-identifiable or medical information. Production use requires a secure authentication service, protected server-side database and file storage, access controls, backups, and appropriate privacy/compliance review.
 
 ---
 
@@ -128,6 +130,14 @@ npm install
 npm run dev
 ```
 Open **`http://localhost:5173`** in your browser. Ensure microphone permissions are granted when prompted.
+
+### Demo accounts
+
+Use **Sign up** to create a local demo account. Account credentials and workspace data are stored in the current browser only; they do not create server-backed identities or synchronize across devices. The acoustic risk index is a heuristic demonstration, not a trained diagnostic model.
+
+### GitHub Pages deployment
+
+The repository includes a GitHub Actions workflow that builds and deploys the static app. Before its first deployment, a repository owner must sign in to GitHub and set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**. Then push to `main` or manually run **Deploy to GitHub Pages** under the repository's Actions tab. The project URL is `https://ganeshp2005.github.io/Parkinson-Voice/` once the deployment succeeds.
 
 ---
 

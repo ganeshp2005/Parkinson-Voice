@@ -2,9 +2,10 @@ import { useRef, useState } from 'react'
 import { Check, FileAudio, Upload } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import { extractAcousticFeatures } from '../../utils/audioAnalysis'
+import { saveSessionAudio } from '../../utils/audioStorage'
 
 export default function AudioUploader() {
-  const { addSession, setIsAnalyzing, patients, activePatientId, setActiveTab } = useVoiceApp()
+  const { addSession, setIsAnalyzing, patients, activePatientId, accountId, setActiveTab } = useVoiceApp()
   const fileInputRef = useRef(null)
   const [uploadedName, setUploadedName] = useState('')
   const activePatient = patients.find((patient) => patient.id === activePatientId)
@@ -19,14 +20,16 @@ export default function AudioUploader() {
 
     try {
       const analysisResult = await extractAcousticFeatures(file)
-      addSession({
+      const session = addSession({
         title: file.name.replace(/\.[^/.]+$/, ''),
         category: 'Uploaded Audio File',
         patientId: activePatientId,
         duration: analysisResult.duration,
         audioUrl: URL.createObjectURL(file),
+        hasAudio: true,
         ...analysisResult
       })
+      await saveSessionAudio(accountId, session.id, file)
     } catch (err) {
       console.warn('File upload parsing error:', err)
     } finally {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Activity, Mic, RefreshCw, Square } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
 import { extractAcousticFeatures } from '../../utils/audioAnalysis'
+import { saveSessionAudio } from '../../utils/audioStorage'
 import LiveAudioCanvas from './LiveAudioCanvas'
 
 export default function AudioRecorder() {
@@ -12,6 +13,7 @@ export default function AudioRecorder() {
     setIsAnalyzing,
     patients,
     activePatientId,
+    accountId,
     setActiveTab,
     addSession,
   } = useVoiceApp()
@@ -100,14 +102,16 @@ export default function AudioRecorder() {
       const analysisResult = await extractAcousticFeatures(blob)
 
       const sessionTitle = `Vocal Phonation #${Math.floor(Math.random() * 899 + 100)}`
-      addSession({
+      const session = addSession({
         title: sessionTitle,
         category: 'Live Mic Phonation',
         patientId: activePatientId,
         duration: formatTime(elapsedSeconds || 1),
         audioUrl,
+        hasAudio: true,
         ...analysisResult
       })
+      await saveSessionAudio(accountId, session.id, blob)
 
       setIsAnalyzing(false)
     }, 1500)

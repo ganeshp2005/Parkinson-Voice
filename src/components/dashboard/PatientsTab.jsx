@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ClipboardPlus, Pencil, Trash2, UserRound, UsersRound } from 'lucide-react'
 import { useVoiceApp } from '../../context/VoiceAppContext'
+import SessionAudioButton from '../common/SessionAudioButton'
 
 const emptyPatient = {
   firstName: '',
@@ -31,7 +32,10 @@ export default function PatientsTab() {
     updatePatient,
     deletePatient,
     setActivePatientId,
-    sessions
+    setCurrentSession,
+    setActiveTab,
+    sessions,
+    accountId
   } = useVoiceApp()
   const selectedPatient = patients.find((patient) => patient.id === activePatientId)
   const [form, setForm] = useState(emptyPatient)
@@ -138,7 +142,42 @@ export default function PatientsTab() {
               ))}
             </div>
           )}
-          {selectedPatient && <div className="active-patient-summary"><b>Selected patient</b><span>{selectedPatient.firstName} {selectedPatient.lastName}</span><small>{selectedPatient.phone || 'No phone'} · {selectedPatient.email || 'No email'}</small></div>}
+          {selectedPatient && (
+            <div className="patient-profile-details">
+              <div className="patient-profile-heading"><span className="patient-avatar">{selectedPatient.firstName[0]}{selectedPatient.lastName[0]}</span><div><b>{selectedPatient.firstName} {selectedPatient.lastName}</b><small>Patient profile</small></div></div>
+              <dl className="patient-detail-grid">
+                <div><dt>Date of birth</dt><dd>{selectedPatient.dateOfBirth || 'Not provided'}</dd></div>
+                <div><dt>Gender</dt><dd>{selectedPatient.gender || 'Not provided'}</dd></div>
+                <div><dt>Phone</dt><dd>{selectedPatient.phone || 'Not provided'}</dd></div>
+                <div><dt>Email</dt><dd>{selectedPatient.email || 'Not provided'}</dd></div>
+                <div><dt>Address</dt><dd>{selectedPatient.address || 'Not provided'}</dd></div>
+                <div><dt>Emergency contact</dt><dd>{[selectedPatient.emergencyContact, selectedPatient.emergencyPhone].filter(Boolean).join(' · ') || 'Not provided'}</dd></div>
+                <div><dt>Diagnosis / status</dt><dd>{selectedPatient.diagnosis || 'Not provided'}</dd></div>
+                <div><dt>Diagnosis date</dt><dd>{selectedPatient.diagnosisDate || 'Not provided'}</dd></div>
+                <div><dt>Symptom onset</dt><dd>{selectedPatient.symptomOnset || 'Not provided'}</dd></div>
+                <div><dt>Clinician</dt><dd>{selectedPatient.clinician || 'Not provided'}</dd></div>
+                <div className="patient-detail-wide"><dt>Allergies</dt><dd>{selectedPatient.allergies || 'Not provided'}</dd></div>
+                <div className="patient-detail-wide"><dt>Medical history</dt><dd>{selectedPatient.medicalHistory || 'Not provided'}</dd></div>
+                <div className="patient-detail-wide"><dt>Medications</dt><dd>{selectedPatient.medications || 'Not provided'}</dd></div>
+                <div className="patient-detail-wide"><dt>Notes</dt><dd>{selectedPatient.notes || 'Not provided'}</dd></div>
+              </dl>
+
+              <div className="patient-voice-history">
+                <h3>Voice history and results</h3>
+                {sessions.filter((session) => session.patientId === selectedPatient.id).length === 0 ? (
+                  <p>No voice sessions recorded for this patient.</p>
+                ) : sessions.filter((session) => session.patientId === selectedPatient.id).map((session) => (
+                  <button className="patient-voice-session" type="button" key={session.id} onClick={() => { setActivePatientId(selectedPatient.id); setCurrentSession(session); setActiveTab('Overview') }}>
+                    <span><b>{session.title}</b><small>{session.date} · {session.category} · {session.duration}</small></span>
+                    <span className="patient-session-result"><b>{session.riskScore}%</b><small>{session.riskLevel}</small></span>
+                    <small>Clarity {session.clarityScore}/100</small>
+                    {session.metrics && <small>Jitter {(session.metrics.jitter * 100).toFixed(2)}% · Shimmer {(session.metrics.shimmer * 100).toFixed(2)}% · HNR {session.metrics.hnr.toFixed(1)} dB</small>}
+                    <SessionAudioButton session={session} accountId={accountId} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </div>
 
@@ -177,7 +216,25 @@ export default function PatientsTab() {
         .patient-row-actions { display: flex; gap: 4px; }
         .patient-row-actions button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 6px; color: var(--text-muted); background: transparent; cursor: pointer; }
         .patient-row-actions button:hover { color: #fff; background: rgba(255,255,255,.1); }
-        .active-patient-summary { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid rgba(255,255,255,.1); margin-top: 16px; padding-top: 14px; font-size: .82rem; color: #fff; }
+        .patient-profile-details { border-top: 1px solid rgba(255,255,255,.1); margin-top: 16px; padding-top: 16px; }
+        .patient-profile-heading { display: flex; align-items: center; gap: 10px; color: #fff; font-size: .9rem; }
+        .patient-profile-heading > div { display: flex; flex-direction: column; gap: 3px; }
+        .patient-profile-heading small { color: var(--text-muted); font-size: .72rem; }
+        .patient-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+        .patient-detail-grid > div { min-width: 0; }
+        .patient-detail-grid .patient-detail-wide { grid-column: 1 / -1; }
+        .patient-detail-grid dt { color: var(--text-muted); font-size: .69rem; margin-bottom: 3px; }
+        .patient-detail-grid dd { color: #e5ebef; font-size: .78rem; overflow-wrap: anywhere; line-height: 1.4; }
+        .patient-voice-history { border-top: 1px solid rgba(255,255,255,.1); margin-top: 18px; padding-top: 16px; }
+        .patient-voice-history h3 { color: #fff; font-size: .95rem; margin-bottom: 10px; }
+        .patient-voice-history > p { color: var(--text-muted); font-size: .78rem; }
+        .patient-voice-session { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 11px; margin-top: 8px; border: 1px solid rgba(255,255,255,.1); border-radius: 7px; background: rgba(255,255,255,.025); color: var(--text-muted); text-align: left; cursor: pointer; }
+        .patient-voice-session:hover { border-color: var(--neon-cyan); background: rgba(0,242,254,.06); }
+        .patient-voice-session > span:first-child { display: flex; flex-direction: column; gap: 3px; }
+        .patient-voice-session b { color: #fff; font-size: .8rem; }
+        .patient-voice-session small { font-size: .69rem; }
+        .patient-voice-session .patient-session-result { display: flex; gap: 8px; align-items: center; }
+        .patient-voice-session .patient-session-result b { color: var(--neon-cyan); }
         @media (max-width: 900px) { .patient-layout { grid-template-columns: 1fr; } }
         @media (max-width: 520px) { .patients-heading { align-items: flex-start; flex-direction: column; } .patient-form-grid { grid-template-columns: 1fr; } .patient-field-wide { grid-column: auto; } .patient-form, .patient-list { padding: 16px; } }
       `}</style>
